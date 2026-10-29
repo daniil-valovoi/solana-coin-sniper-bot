@@ -30,6 +30,8 @@ class TelegramTrigger:
         sniper.on_refetch = self.refetch_and_buy
 
     async def _extract_valid_ca(self, text: str) -> str | None:
+        if self.sniper.cfg.skip_ca_check:
+            return self.sniper.pick_ca_fast(text)
         matches = SOLANA_CA_PATTERN.findall(text)
         if not matches:
             return None
@@ -48,7 +50,7 @@ class TelegramTrigger:
             log("TG", "No valid on-chain address found — skipping")
             return
         self.already_triggered = True
-        log("TG", f"CA confirmed on-chain: {ca}")
+        log("TG", f"CA selected: {ca}")
         tx_hash = await self.sniper.buy(ca)
         if not tx_hash:
             log("BUY", "No position opened")
